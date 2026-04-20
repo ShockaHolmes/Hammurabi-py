@@ -182,7 +182,7 @@ class Hammurabi:
         population = 100
         acres = 1000
         grain = 2800
-        land_price = random.randint(17, 26)
+        land_price = random.randint(17, 23)
 
         total_starved = 0
         total_percent_starved = 0
