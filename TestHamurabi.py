@@ -1,6 +1,11 @@
 
-class HammurabiTest:
-    def __init__(self):
+import unittest
+
+from Hammurabi import Hammurabi
+
+
+class HammurabiTest(unittest.TestCase):
+    def setUp(self):
         self.ham = Hammurabi()
 
     def about(self, expected, actual):
@@ -75,3 +80,7 @@ class HammurabiTest:
             cost[price] += 1
         for j in range(17, 24):
             assert cost[j] > 0, f"You never have a land cost of {j} bushels per acre."
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -4,6 +4,37 @@ class Hammurabi:
     def __init__(self):
         self.rand = random.Random()
 
+    def plagueDeaths(self, population):
+        if self.rand.randint(1, 100) <= 15:
+            return population // 2
+        return 0
+
+    def starvationDeaths(self, population, bushelsFedToPeople):
+        return max(0, population - (bushelsFedToPeople // 20))
+
+    def uprising(self, population, howManyPeopleStarved):
+        if population <= 0:
+            return False
+        return howManyPeopleStarved / population > 0.45
+
+    def immigrants(self, population, acresOwned, grainInStorage):
+        if population <= 0:
+            return 0
+        return (20 * acresOwned + grainInStorage) // (100 * population) + 1
+
+    def harvest(self, acres, bushelsUsedAsSeed=None):
+        yield_per_acre = self.rand.randint(1, 6)
+        return acres * yield_per_acre
+
+    def grainEatenByRats(self, bushels):
+        if self.rand.randint(1, 100) <= 40:
+            percent_eaten = self.rand.randint(10, 30)
+            return (bushels * percent_eaten) // 100
+        return 0
+
+    def newCostOfLand(self):
+        return self.rand.randint(17, 23)
+
     def get_int_input(self, prompt, minimum=0, maximum=None):
         while True:
             try:
@@ -182,7 +213,7 @@ class Hammurabi:
         population = 100
         acres = 1000
         grain = 2800
-        land_price = random.randint(17, 23)
+        land_price = 19
 
         total_starved = 0
         total_percent_starved = 0
@@ -243,10 +274,9 @@ class Hammurabi:
             grain -= plant * 2
 
             # Starvation
-            people_fed = feed // 20
-            starved = max(0, population - people_fed)
+            starved = self.starvationDeaths(population, feed)
 
-            if population > 0 and (starved / population) > 0.45:
+            if self.uprising(population, starved):
                 print("\nYou starved too many people in one year.")
                 print("The people have overthrown you.")
                 print("Game over.")
@@ -261,26 +291,23 @@ class Hammurabi:
             # Immigration
             immigrants = 0
             if starved == 0:
-                immigrants = (20 * acres + grain) // (100 * population) + 1
+                immigrants = self.immigrants(population, acres, grain)
                 population += immigrants
 
             # Plague
-            plague_deaths = 0
-            if random.randint(1, 100) <= 15:
-                plague_deaths = population // 2
+            plague_deaths = self.plagueDeaths(population)
+            if plague_deaths > 0:
                 population -= plague_deaths
                 plague_deaths_total += plague_deaths
 
             # Harvest
-            yield_per_acre = random.randint(1, 6)
-            harvest = plant * yield_per_acre
+            harvest = self.harvest(plant)
+            yield_per_acre = 0 if plant == 0 else harvest // plant
             grain += harvest
 
             # Rats
-            rats_ate = 0
-            if random.randint(1, 100) <= 40:
-                rats_ate = grain // random.choice([2, 3, 4])
-                grain -= rats_ate
+            rats_ate = self.grainEatenByRats(grain)
+            grain -= rats_ate
 
             # End of year report
             print("\nYear-end report:")
@@ -316,7 +343,7 @@ class Hammurabi:
             )
 
             year += 1
-            land_price = random.randint(17, 26)
+            land_price = self.newCostOfLand()
 
             if population <= 0:
                 print("\nAll the people are gone. Your reign has ended.")
