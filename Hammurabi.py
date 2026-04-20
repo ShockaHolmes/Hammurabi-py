@@ -93,6 +93,85 @@ class Hammurabi:
 
             print()
 
+    def people_feeling_about_rule(self, starved, population_before, plague_deaths, acres, grain, population):
+        # Build a simple sentiment score from starvation, disease, and resource security.
+        if population_before <= 0 or population <= 0:
+            return "No one remains to judge your rule."
+
+        starvation_percent = (starved / population_before) * 100
+        acres_per_person = acres / population
+        grain_per_person = grain / population
+
+        score = 0
+
+        if starved == 0:
+            score += 2
+        elif starvation_percent <= 5:
+            score += 1
+        elif starvation_percent <= 15:
+            score += 0
+        elif starvation_percent <= 30:
+            score -= 1
+        else:
+            score -= 2
+
+        if plague_deaths > 0:
+            score -= 1
+
+        if acres_per_person >= 10:
+            score += 1
+        elif acres_per_person < 7:
+            score -= 1
+
+        if grain_per_person >= 20:
+            score += 1
+        elif grain_per_person < 10:
+            score -= 1
+
+        if score >= 3:
+            return "The people are celebrating your leadership this year."
+        if score >= 1:
+            return "The people feel optimistic about your rule this year."
+        if score == 0:
+            return "The people are cautious but still willing to follow your rule."
+        if score == -1:
+            return "The people are uneasy and questioning your rule."
+        return "The people are angry and losing trust in your rule."
+
+    def print_yearly_summary(
+        self,
+        year,
+        population_before,
+        population_after,
+        acres_before,
+        acres_after,
+        grain_before,
+        grain_after,
+        starved,
+        immigrants,
+        plague_deaths,
+        harvest,
+        rats_ate,
+        feed,
+        planted,
+    ):
+        print(f"\nSummary for Year {year}:")
+        print("People:")
+        print(f"- Started with {population_before}, ended with {population_after} ({population_after - population_before:+d}).")
+        print(f"- {starved} starved, {immigrants} immigrants arrived, {plague_deaths} died in plague.")
+
+        print("Land:")
+        print(f"- Started with {acres_before} acres, ended with {acres_after} acres ({acres_after - acres_before:+d}).")
+
+        print("Food:")
+        print(f"- Started with {grain_before} bushels, ended with {grain_after} bushels ({grain_after - grain_before:+d}).")
+        print(f"- {feed} fed to people, {planted * 2} used for seed, {harvest} harvested, {rats_ate} lost to rats.")
+
+        feeling = self.people_feeling_about_rule(
+            starved, population_before, plague_deaths, acres_after, grain_after, population_after
+        )
+        print(f"How people feel about your rule: {feeling}")
+
     def main(self):
         self.playGame()
 
@@ -110,6 +189,10 @@ class Hammurabi:
         plague_deaths_total = 0
 
         while year <= 10:
+            population_before = population
+            acres_before = acres
+            grain_before = grain
+
             print(f"\n{'-' * 60}")
             print(f"Year {year}")
             print(f"{'-' * 60}")
@@ -214,6 +297,23 @@ class Hammurabi:
             print(f"Population is now {population}.")
             print(f"You now own {acres} acres.")
             print(f"You now have {grain} bushels in storage.")
+
+            self.print_yearly_summary(
+                year,
+                population_before,
+                population,
+                acres_before,
+                acres,
+                grain_before,
+                grain,
+                starved,
+                immigrants,
+                plague_deaths,
+                harvest,
+                rats_ate,
+                feed,
+                plant,
+            )
 
             year += 1
             land_price = random.randint(17, 26)
